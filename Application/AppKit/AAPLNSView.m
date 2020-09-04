@@ -21,16 +21,18 @@ Customized view for macOS
 #pragma mark - Initialization and Setup
 ///////////////////////////////////////
 
-- (instancetype)initCommon
+- (void)initCommon
 {
     self.wantsLayer = YES;
-    self.layer = [CAMetalLayer layer];
 
     self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 
-    self = [super initCommon];
+    [super initCommon];
+}
 
-    return self;
+- (CALayer *)makeBackingLayer
+{
+    return [CAMetalLayer layer];
 }
 
 - (void)viewDidMoveToWindow
@@ -70,7 +72,10 @@ Customized view for macOS
     _displaySource = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
     __weak AAPLView* weakSelf = self;
     dispatch_source_set_event_handler(_displaySource, ^(){
-        [weakSelf render];
+        @autoreleasepool
+        {
+            [weakSelf render];
+        }
     });
     dispatch_resume(_displaySource);
 

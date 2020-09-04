@@ -11,14 +11,14 @@ Metal shaders used for this sample
 using namespace metal;
 
 // Include header shared between this Metal shader code and C code executing Metal API commands
-#import "AAPLShaderTypes.h"
+#include "AAPLShaderTypes.h"
 
 // Vertex shader outputs and per-fragment inputs
-typedef struct
+struct RasterizerData
 {
     float4 clipSpacePosition [[position]];
     float3 color;
-} RasterizerData;
+};
 
 vertex RasterizerData
 vertexShader(uint vertexID [[ vertex_id ]],

@@ -60,8 +60,8 @@
 		3AD6AA6C21555EEB004C3689 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3AD6AA70215580EC004C3689 /* AAPLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAPLView.h; sourceTree = "<group>"; };
 		3AD6AA71215580EC004C3689 /* AAPLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AAPLView.m; sourceTree = "<group>"; };
-		5167ECB0516977B000000001 /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE.txt; sourceTree = "<group>"; };
-		5391A4305391A20000000001 /* SampleCode.xcconfig */ = {isa = PBXFileReference; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
+		63B38D5FE99FEA491F9044FE /* LICENSE.txt */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE.txt; sourceTree = "<group>"; };
+		9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */ = {isa = PBXFileReference; name = SampleCode.xcconfig; path = Configuration/SampleCode.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +89,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		118D1DB45BDA57CF0EC8F4EA /* LICENSE */ = {
+			isa = PBXGroup;
+			children = (
+				63B38D5FE99FEA491F9044FE /* LICENSE.txt */,
+			);
+			name = LICENSE;
+			path = LICENSE;
+			sourceTree = "<group>";
+		};
 		3A93CDC821545E3100521334 = {
 			isa = PBXGroup;
 			children = (
@@ -96,8 +105,8 @@
 				3A93CE2521545E7300521334 /* Application */,
 				3A93CE3821545E7300521334 /* Renderer */,
 				3A93CDD821545E3400521334 /* Products */,
-				5391A1605391A7C000000001 /* Configuration */,
-				5167CDA05167CD6000000001 /* LICENSE */,
+				9EDC65C7FEC07224283DD5F2 /* Configuration */,
+				118D1DB45BDA57CF0EC8F4EA /* LICENSE */,
 			);
 			sourceTree = "<group>";
 		};
@@ -187,19 +196,10 @@
 			path = macOS;
 			sourceTree = "<group>";
 		};
-		5167CDA05167CD6000000001 /* LICENSE */ = {
+		9EDC65C7FEC07224283DD5F2 /* Configuration */ = {
 			isa = PBXGroup;
 			children = (
-				5167ECB0516977B000000001 /* LICENSE.txt */,
-			);
-			name = LICENSE;
-			path = LICENSE;
-			sourceTree = "<group>";
-		};
-		5391A1605391A7C000000001 /* Configuration */ = {
-			isa = PBXGroup;
-			children = (
-				5391A4305391A20000000001 /* SampleCode.xcconfig */,
+				9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */,
 			);
 			name = Configuration;
 			sourceTree = "<group>";
@@ -214,7 +214,6 @@
 				3A93CDD321545E3400521334 /* Sources */,
 				3A93CDD421545E3400521334 /* Frameworks */,
 				3A93CDD521545E3400521334 /* Resources */,
-				4CF229204CF227F000000001,
 			);
 			buildRules = (
 			);
@@ -232,7 +231,6 @@
 				3A93CDE921545E3400521334 /* Sources */,
 				3A93CDEA21545E3400521334 /* Frameworks */,
 				3A93CDEB21545E3400521334 /* Resources */,
-				4CF225604CF20D5000000001,
 			);
 			buildRules = (
 			);
@@ -250,7 +248,6 @@
 				3A93CDFB21545E3400521334 /* Sources */,
 				3A93CDFC21545E3400521334 /* Frameworks */,
 				3A93CDFD21545E3400521334 /* Resources */,
-				4CF1DFE04CF1DEB000000001,
 			);
 			buildRules = (
 			);
@@ -267,7 +264,7 @@
 		3A93CDC921545E3100521334 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1100;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Apple;
 				TargetAttributes = {
 					3A93CDD621545E3400521334 = {
@@ -403,7 +400,7 @@
 /* Begin XCBuildConfiguration section */
 		3A93CE1621545E3400521334 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -428,6 +425,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -459,7 +457,7 @@
 		};
 		3A93CE1721545E3400521334 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -484,6 +482,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -508,7 +507,7 @@
 		};
 		3A93CE1921545E3400521334 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -519,11 +518,13 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Application/UIKit/iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator*]" = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -534,7 +535,7 @@
 		};
 		3A93CE1A21545E3400521334 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -542,11 +543,13 @@
 				DEVELOPMENT_TEAM = "";
 				GCC_PREPROCESSOR_DEFINITIONS = "TARGET_IOS=1";
 				INFOPLIST_FILE = Application/UIKit/iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator*]" = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -558,7 +561,7 @@
 		};
 		3A93CE1C21545E3400521334 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "tvOS App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "tvOS LaunchImage";
@@ -573,18 +576,20 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 11.4;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator*]" = 13.0;
 			};
 			name = Debug;
 		};
 		3A93CE1D21545E3400521334 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "tvOS App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "tvOS LaunchImage";
@@ -596,19 +601,21 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 11.4;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator*]" = 13.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		3A93CE1F21545E3400521334 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -626,6 +633,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -635,7 +643,7 @@
 		};
 		3A93CE2021545E3400521334 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5391A4305391A20000000001 /* SampleCode.xcconfig */;
+			baseConfigurationReference = 9CC9FB57B6240EF7576DABF1 /* SampleCode.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -650,6 +658,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.CustomMetalView${SAMPLE_CODE_DISAMBIGUATOR}";
 				PRODUCT_NAME = CustomMetalView;
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -17,10 +17,6 @@ Application entry point for all platforms
 
 int main(int argc, char * argv[]) {
 
-#if TARGET_OS_SIMULATOR
-#error This sample does not support Simulator.  Must build for a device
-#endif
-
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([AAPLAppDelegate class]));
     }

@@ -8,6 +8,10 @@ Implementation of renderer class which performs Metal setup and per-frame render
 #import "AAPLShaderTypes.h"
 #import "AAPLConfig.h"
 
+#if CREATE_DEPTH_BUFFER
+static const MTLPixelFormat AAPLDepthPixelFormat = MTLPixelFormatDepth32Float;
+#endif
+
 @implementation AAPLRenderer
 {
     // renderer global ivars
@@ -15,13 +19,13 @@ Implementation of renderer class which performs Metal setup and per-frame render
     id <MTLCommandQueue>        _commandQueue;
     id <MTLRenderPipelineState> _pipelineState;
     id <MTLBuffer>              _vertices;
+    id <MTLTexture>             _depthTarget;
 
     // Render pass descriptor which creates a render command encoder to draw to the drawable
     // textures
     MTLRenderPassDescriptor *_drawableRenderDescriptor;
 
     vector_uint2 _viewportSize;
-    float scaleFactor;
     
     NSUInteger _frameNum;
 }
@@ -42,6 +46,12 @@ Implementation of renderer class which performs Metal setup and per-frame render
         _drawableRenderDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
         _drawableRenderDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
         _drawableRenderDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 1, 1);
+
+#if CREATE_DEPTH_BUFFER
+        _drawableRenderDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
+        _drawableRenderDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
+        _drawableRenderDescriptor.depthAttachment.clearDepth = 1.0;
+#endif
 
         {
             id<MTLLibrary> shaderLib = [_device newDefaultLibrary];
@@ -93,6 +103,10 @@ Implementation of renderer class which performs Metal setup and per-frame render
             pipelineDescriptor.vertexFunction                  = vertexProgram;
             pipelineDescriptor.fragmentFunction                = fragmentProgram;
             pipelineDescriptor.colorAttachments[0].pixelFormat = drawabklePixelFormat;
+
+#if CREATE_DEPTH_BUFFER
+            pipelineDescriptor.depthAttachmentPixelFormat      = AAPLDepthPixelFormat;
+#endif
 
             NSError *error;
             _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineDescriptor
@@ -162,6 +176,19 @@ Implementation of renderer class which performs Metal setup and per-frame render
 {
     _viewportSize.x = drawableSize.width;
     _viewportSize.y = drawableSize.height;
+    
+#if CREATE_DEPTH_BUFFER
+    MTLTextureDescriptor *depthTargetDescriptor = [MTLTextureDescriptor new];
+    depthTargetDescriptor.width       = drawableSize.width;
+    depthTargetDescriptor.height      = drawableSize.height;
+    depthTargetDescriptor.pixelFormat = AAPLDepthPixelFormat;
+    depthTargetDescriptor.storageMode = MTLStorageModePrivate;
+    depthTargetDescriptor.usage       = MTLTextureUsageRenderTarget;
+
+    _depthTarget = [_device newTextureWithDescriptor:depthTargetDescriptor];
+
+    _drawableRenderDescriptor.depthAttachment.texture = _depthTarget;
+#endif
 }
 
 @end

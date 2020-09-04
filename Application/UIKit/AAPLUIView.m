@@ -130,7 +130,8 @@ Customized view for iOS & tvOS
     NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
     [_displayLink addToRunLoop:runLoop forMode:@"AAPLDisplayLinkMode"];
 
-    // The '_continueRunLoop' ivar is set outside this thread, so it must be synchronized.  Create a 'continueRunLoop' local var that can be set from the _continueRunLoop ivar in a @synchronized block
+    // The '_continueRunLoop' ivar is set outside this thread, so it must be synchronized.  Create a
+    // 'continueRunLoop' local var that can be set from the _continueRunLoop ivar in a @synchronized block
     BOOL continueRunLoop = YES;
 
     // Begin the run loop

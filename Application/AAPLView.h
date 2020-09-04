@@ -37,7 +37,7 @@ Custom view base class
 
 @property (nonatomic, nullable) id<AAPLViewDelegate> delegate;
 
-- (nonnull instancetype)initCommon;
+- (void)initCommon;
 
 #if AUTOMATICALLY_RESIZE
 - (void)resizeDrawable:(CGFloat)scaleFactor;

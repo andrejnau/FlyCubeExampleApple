@@ -36,6 +36,11 @@ You control these options by changing the preprocessor definitions in the `AAPLC
 // the view is resized. When disabled, you can update the drawable's
 // size explicitly outside the view class.
 #define AUTOMATICALLY_RESIZE  1
+
+// When enabled, the renderer creates a depth target (i.e. depth buffer)
+// and attaches with the render pass descritpr along with the drawable
+// texture for rendering.  This enables the app properly perform depth testing.
+#define CREATE_DEPTH_BUFFER   1
 ```
 
 ## Configure the View With a Metal Layer
@@ -53,12 +58,20 @@ To indicate the type of layer backing, the view implements the `layerClass` clas
 ```
 
 In AppKit, you make the view layer backed by setting the view's `wantsLayer` property.
-The app explicitly creates a `CAMetalLayer` object and assigns it to the view's `layer` property.
 
 ``` objective-c
 self.wantsLayer = YES;
-self.layer = [CAMetalLayer layer];
 ```
+
+This triggers a call to the view's  `makeBackingLayer` method, which returns a CAMetalLayer object.
+
+``` objective-c
+- (CALayer *)makeBackingLayer
+{
+    return [CAMetalLayer layer];
+}
+```
+
 
 ## Render to the View
 
@@ -133,7 +146,10 @@ If the view is moved to another screen, AppKit also calls `viewDidMoveToWindow`,
     _displaySource = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
     __weak AAPLView* weakSelf = self;
     dispatch_source_set_event_handler(_displaySource, ^(){
-        [weakSelf render];
+        @autoreleasepool
+        {
+            [weakSelf render];
+        }
     });
     dispatch_resume(_displaySource);
 

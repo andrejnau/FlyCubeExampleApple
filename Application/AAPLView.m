@@ -18,7 +18,7 @@ Custom view base class
     self = [super initWithFrame:frame];
     if(self)
     {
-        return [self initCommon];
+        [self initCommon];
     }
     return self;
 }
@@ -28,18 +28,16 @@ Custom view base class
     self = [super initWithCoder:aDecoder];
     if(self)
     {
-        return [self initCommon];
+        [self initCommon];
     }
     return self;
 }
 
-- (instancetype)initCommon
+- (void)initCommon
 {
     _metalLayer = (CAMetalLayer*) self.layer;
 
     self.layer.delegate = self;
-
-    return self;
 }
 
 //////////////////////////////////
@@ -104,18 +102,34 @@ Custom view base class
     newSize.width *= scaleFactor;
     newSize.height *= scaleFactor;
 
+    if(newSize.width <= 0 || newSize.width <= 0)
+    {
+        return;
+    }
+
 #if RENDER_ON_MAIN_THREAD
+
+    if(newSize.width == _metalLayer.drawableSize.width &&
+       newSize.height == _metalLayer.drawableSize.height)
+    {
+        return;
+    }
+
     _metalLayer.drawableSize = newSize;
 
-    if(_delegate)
-    {
-        [_delegate drawableResize:newSize];
-    }
+    [_delegate drawableResize:newSize];
+    
 #else
     // All AppKit and UIKit calls which notify of a resize are called on the main thread.  Use
     // a synchronized block to ensure that resize notifications on the delegate are atomic
     @synchronized(_metalLayer)
     {
+        if(newSize.width == _metalLayer.drawableSize.width &&
+           newSize.height == _metalLayer.drawableSize.height)
+        {
+            return;
+        }
+
         _metalLayer.drawableSize = newSize;
 
         [_delegate drawableResize:newSize];
