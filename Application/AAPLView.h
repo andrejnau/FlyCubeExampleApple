@@ -10,9 +10,9 @@ Custom view base class
 #import "AAPLConfig.h"
 
 #if TARGET_IOS || TARGET_TVOS
-@import UIKit;
+#import <UIKit/UIKit.h>
 #else
-@import AppKit;
+#import <AppKit/AppKit.h>
 #endif
 
 // Protocol to provide resize and redraw callbacks to a delegate
