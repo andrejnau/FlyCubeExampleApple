@@ -5,190 +5,156 @@ Abstract:
 Implementation of renderer class which performs Metal setup and per-frame rendering
 */
 #import "AAPLRenderer.h"
-#import "AAPLShaderTypes.h"
 #import "AAPLConfig.h"
+#include <Instance/Instance.h>
+#include <fstream>
 
-#if CREATE_DEPTH_BUFFER
-static const MTLPixelFormat AAPLDepthPixelFormat = MTLPixelFormatDepth32Float;
-#endif
+constexpr uint32_t frame_count = 3;
+
+std::vector<uint8_t> readFile(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+    file.unsetf(std::ios::skipws);
+    
+    std::streampos filesize;
+    file.seekg(0, std::ios::end);
+    filesize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> vec;
+    vec.reserve(filesize);
+    vec.insert(vec.begin(),
+               std::istream_iterator<uint8_t>(file),
+               std::istream_iterator<uint8_t>());
+    return vec;
+}
 
 @implementation AAPLRenderer
 {
-    // renderer global ivars
-    id <MTLDevice>              _device;
-    id <MTLCommandQueue>        _commandQueue;
-    id <MTLRenderPipelineState> _pipelineState;
-    id <MTLBuffer>              _vertices;
-    id <MTLTexture>             _depthTarget;
-
-    // Render pass descriptor which creates a render command encoder to draw to the drawable
-    // textures
-    MTLRenderPassDescriptor *_drawableRenderDescriptor;
-
-    vector_uint2 _viewportSize;
-    
-    NSUInteger _frameNum;
+    CAMetalLayer* layer;
+    glm::vec2 rect;
+    std::shared_ptr<Instance> instance;
+    std::shared_ptr<Adapter> adapter;
+    std::shared_ptr<Device> device;
+    std::shared_ptr<CommandQueue> command_queue;
+    std::shared_ptr<Swapchain> swapchain;
+    uint64_t fence_value;
+    std::shared_ptr<Fence> fence;
+    std::array<uint64_t, frame_count> fence_values;
+    std::shared_ptr<Resource> index_buffer;
+    std::shared_ptr<Resource> vertex_buffer;
+    std::shared_ptr<Resource> constant_buffer;
+    std::shared_ptr<Shader> vertex_shader;
+    std::shared_ptr<Shader> pixel_shader;
+    std::shared_ptr<Program> program;
+    std::shared_ptr<View> constant_view;
+    std::shared_ptr<BindingSetLayout> layout;
+    std::shared_ptr<BindingSet> binding_set;
+    std::shared_ptr<RenderPass> render_pass;
+    std::shared_ptr<Pipeline> pipeline;
 }
 
-- (nonnull instancetype)initWithMetalDevice:(nonnull id<MTLDevice>)device
-                        drawablePixelFormat:(MTLPixelFormat)drawabklePixelFormat
+- (nonnull instancetype)initWithMetalLayer:(nonnull CAMetalLayer*)metalLayer
 {
     self = [super init];
     if (self)
     {
-        _frameNum = 0;
+        layer = metalLayer;
+        instance = CreateInstance(ApiType::kMetal);
+        adapter = std::move(instance->EnumerateAdapters().front());
+        device = adapter->CreateDevice();
+        command_queue = device->GetCommandQueue(CommandListType::kGraphics);
+        fence_value = 0;
+        fence = device->CreateFence(fence_value);
 
-        _device = device;
+        std::vector<uint32_t> index_data = { 0, 1, 2 };
+        index_buffer = device->CreateBuffer(BindFlag::kIndexBuffer | BindFlag::kCopyDest, sizeof(uint32_t) * index_data.size());
+        index_buffer->CommitMemory(MemoryType::kUpload);
+        index_buffer->UpdateUploadBuffer(0, index_data.data(), sizeof(index_data.front()) * index_data.size());
 
-        _commandQueue = [_device newCommandQueue];
+        std::vector<glm::vec3> vertex_data = { glm::vec3(-0.5, -0.5, 0.0), glm::vec3(0.0,  0.5, 0.0), glm::vec3(0.5, -0.5, 0.0) };
+        vertex_buffer = device->CreateBuffer(BindFlag::kVertexBuffer | BindFlag::kCopyDest, sizeof(vertex_data.front()) * vertex_data.size());
+        vertex_buffer->CommitMemory(MemoryType::kUpload);
+        vertex_buffer->UpdateUploadBuffer(0, vertex_data.data(), sizeof(vertex_data.front()) * vertex_data.size());
 
-        _drawableRenderDescriptor = [MTLRenderPassDescriptor new];
-        _drawableRenderDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-        _drawableRenderDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
-        _drawableRenderDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 1, 1, 1);
+        glm::vec4 constant_data = glm::vec4(1, 0, 0, 1);
+        constant_buffer = device->CreateBuffer(BindFlag::kConstantBuffer | BindFlag::kCopyDest, sizeof(constant_data));
+        constant_buffer->CommitMemory(MemoryType::kUpload);
+        constant_buffer->UpdateUploadBuffer(0, &constant_data, sizeof(constant_data));
+        
+        auto vertex_path = [[NSBundle mainBundle] pathForResource:@"VertexShader" ofType:@"spv"];
+        vertex_shader = device->CreateShader(readFile([vertex_path UTF8String]), ShaderBlobType::kSPIRV, ShaderType::kVertex);
+        auto pixel_path = [[NSBundle mainBundle] pathForResource:@"PixelShader" ofType:@"spv"];
+        pixel_shader = device->CreateShader(readFile([pixel_path UTF8String]), ShaderBlobType::kSPIRV, ShaderType::kPixel);
+        program = device->CreateProgram({ vertex_shader, pixel_shader });
 
-#if CREATE_DEPTH_BUFFER
-        _drawableRenderDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-        _drawableRenderDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-        _drawableRenderDescriptor.depthAttachment.clearDepth = 1.0;
-#endif
+        ViewDesc constant_view_desc = {};
+        constant_view_desc.view_type = ViewType::kConstantBuffer;
+        constant_view_desc.dimension = ViewDimension::kBuffer;
+        constant_view = device->CreateView(constant_buffer, constant_view_desc);
+        BindKey settings_key = { ShaderType::kPixel, ViewType::kConstantBuffer, 0, 0, 1 };
+        layout = device->CreateBindingSetLayout({ settings_key });
+        binding_set = device->CreateBindingSet(layout);
+        binding_set->WriteBindings({ { settings_key, constant_view } });
 
-        {
-            id<MTLLibrary> shaderLib = [_device newDefaultLibrary];
-            if(!shaderLib)
-            {
-                NSLog(@" ERROR: Couldnt create a default shader library");
-                // assert here because if the shader libary isn't loading, nothing good will happen
-                return nil;
-            }
-
-            id <MTLFunction> vertexProgram = [shaderLib newFunctionWithName:@"vertexShader"];
-            if(!vertexProgram)
-            {
-                NSLog(@">> ERROR: Couldn't load vertex function from default library");
-                return nil;
-            }
-
-            id <MTLFunction> fragmentProgram = [shaderLib newFunctionWithName:@"fragmentShader"];
-            if(!fragmentProgram)
-            {
-                NSLog(@" ERROR: Couldn't load fragment function from default library");
-                return nil;
-            }
-
-            // Set up a simple MTLBuffer with the vertices, including position and texture coordinates
-            static const AAPLVertex quadVertices[] =
-            {
-                // Pixel positions, Color coordinates
-                { {  250,  -250 },  { 1.f, 0.f, 0.f } },
-                { { -250,  -250 },  { 0.f, 1.f, 0.f } },
-                { { -250,   250 },  { 0.f, 0.f, 1.f } },
-
-                { {  250,  -250 },  { 1.f, 0.f, 0.f } },
-                { { -250,   250 },  { 0.f, 0.f, 1.f } },
-                { {  250,   250 },  { 1.f, 0.f, 1.f } },
-            };
-
-            // Create a vertex buffer, and initialize it with the vertex data.
-            _vertices = [_device newBufferWithBytes:quadVertices
-                                             length:sizeof(quadVertices)
-                                            options:MTLResourceStorageModeShared];
-
-            _vertices.label = @"Quad";
-
-            // Create a pipeline state descriptor to create a compiled pipeline state object
-            MTLRenderPipelineDescriptor *pipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
-
-            pipelineDescriptor.label                           = @"MyPipeline";
-            pipelineDescriptor.vertexFunction                  = vertexProgram;
-            pipelineDescriptor.fragmentFunction                = fragmentProgram;
-            pipelineDescriptor.colorAttachments[0].pixelFormat = drawabklePixelFormat;
-
-#if CREATE_DEPTH_BUFFER
-            pipelineDescriptor.depthAttachmentPixelFormat      = AAPLDepthPixelFormat;
-#endif
-
-            NSError *error;
-            _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineDescriptor
-                                                                     error:&error];
-            if(!_pipelineState)
-            {
-                NSLog(@"ERROR: Failed aquiring pipeline state: %@", error);
-                return nil;
-            }
-        }
+        RenderPassDesc render_pass_desc = {
+            { { gli::FORMAT_BGRA8_UNORM_PACK8, RenderPassLoadOp::kClear, RenderPassStoreOp::kStore } },
+        };
+        render_pass = device->CreateRenderPass(render_pass_desc);
+        ClearDesc clear_desc = { { { 0.0, 0.2, 0.4, 1.0 } } };
+        GraphicsPipelineDesc pipeline_desc = {
+            program,
+            layout,
+            { { 0, "POSITION", gli::FORMAT_RGB32_SFLOAT_PACK32, sizeof(vertex_data.front()) } },
+            render_pass
+        };
+        pipeline = device->CreateGraphicsPipeline(pipeline_desc);
     }
     return self;
 }
 
 - (void)renderToMetalLayer:(nonnull CAMetalLayer*)metalLayer
 {
-    _frameNum++;
-
-    // Create a new command buffer for each render pass to the current drawable.
-    id <MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-
-    id<CAMetalDrawable> currentDrawable = [metalLayer nextDrawable];
-
-    // If the current drawable is nil, skip rendering this frame
-    if(!currentDrawable)
-    {
-        return;
-    }
-
-    _drawableRenderDescriptor.colorAttachments[0].texture = currentDrawable.texture;
+    uint32_t frame_index = swapchain->NextImage(fence, ++fence_value);
+    command_queue->Wait(fence, fence_value);
+    fence->Wait(fence_values[frame_index]);
     
-    id <MTLRenderCommandEncoder> renderEncoder =
-        [commandBuffer renderCommandEncoderWithDescriptor:_drawableRenderDescriptor];
+    ViewDesc back_buffer_view_desc = {};
+    back_buffer_view_desc.view_type = ViewType::kRenderTarget;
+    back_buffer_view_desc.dimension = ViewDimension::kTexture2D;
+    std::shared_ptr<Resource> back_buffer = swapchain->GetBackBuffer(frame_index);
+    std::shared_ptr<View> back_buffer_view = device->CreateView(back_buffer, back_buffer_view_desc);
+    FramebufferDesc framebuffer_desc = {};
+    framebuffer_desc.render_pass = render_pass;
+    framebuffer_desc.width = rect.x;
+    framebuffer_desc.height = rect.y;
+    framebuffer_desc.colors = { back_buffer_view };
+    std::shared_ptr<Framebuffer> framebuffer = device->CreateFramebuffer(framebuffer_desc);
+    std::shared_ptr<CommandList> command_list = device->CreateCommandList(CommandListType::kGraphics);
+    command_list->BindPipeline(pipeline);
+    command_list->BindBindingSet(binding_set);
+    command_list->SetViewport(0, 0, rect.x, rect.y);
+    command_list->SetScissorRect(0, 0, rect.x, rect.y);
+    command_list->IASetIndexBuffer(index_buffer, gli::format::FORMAT_R32_UINT_PACK32);
+    command_list->IASetVertexBuffer(0, vertex_buffer);
+    command_list->ResourceBarrier({ { back_buffer, ResourceState::kPresent, ResourceState::kRenderTarget } });
+    ClearDesc clear_desc = { { { 0.0, 0.2, 0.4, 1.0 } } };
+    command_list->BeginRenderPass(render_pass, framebuffer, clear_desc);
+    command_list->DrawIndexed(3, 1, 0, 0, 0);
+    command_list->EndRenderPass();
+    command_list->ResourceBarrier({ { back_buffer, ResourceState::kRenderTarget, ResourceState::kPresent } });
+    command_list->Close();
 
-
-    [renderEncoder setRenderPipelineState:_pipelineState];
-
-    [renderEncoder setVertexBuffer:_vertices
-                            offset:0
-                           atIndex:AAPLVertexInputIndexVertices ];
-
-    {
-        AAPLUniforms uniforms;
-
-#if ANIMATION_RENDERING
-        uniforms.scale = 0.5 + (1.0 + 0.5 * sin(_frameNum * 0.1));
-#else
-        uniforms.scale = 1.0;
-#endif
-        uniforms.viewportSize = _viewportSize;
-
-        [renderEncoder setVertexBytes:&uniforms
-                               length:sizeof(uniforms)
-                              atIndex:AAPLVertexInputIndexUniforms ];
-    }
-
-    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:6];
-
-    [renderEncoder endEncoding];
-
-    [commandBuffer presentDrawable:currentDrawable];
-
-    [commandBuffer commit];
+    command_queue->ExecuteCommandLists({ command_list });
+    command_queue->Signal(fence, fence_values[frame_index] = ++fence_value);
+    swapchain->Present(fence, fence_values[frame_index]);
 }
 
 - (void)drawableResize:(CGSize)drawableSize
 {
-    _viewportSize.x = drawableSize.width;
-    _viewportSize.y = drawableSize.height;
-    
-#if CREATE_DEPTH_BUFFER
-    MTLTextureDescriptor *depthTargetDescriptor = [MTLTextureDescriptor new];
-    depthTargetDescriptor.width       = drawableSize.width;
-    depthTargetDescriptor.height      = drawableSize.height;
-    depthTargetDescriptor.pixelFormat = AAPLDepthPixelFormat;
-    depthTargetDescriptor.storageMode = MTLStorageModePrivate;
-    depthTargetDescriptor.usage       = MTLTextureUsageRenderTarget;
-
-    _depthTarget = [_device newTextureWithDescriptor:depthTargetDescriptor];
-
-    _drawableRenderDescriptor.depthAttachment.texture = _depthTarget;
-#endif
+    rect.x = drawableSize.width;
+    rect.y = drawableSize.height;
+    swapchain = device->CreateSwapchain((__bridge Window)layer, rect.x, rect.y, frame_count, true);
 }
 
 @end

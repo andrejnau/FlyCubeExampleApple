@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
-project(CustomMetalViewCMake)
+project(FlyCubeExampleApple)
+
+set(CMAKE_CXX_STANDARD 17)
+add_definitions(-DUSE_EXTERNAL_AUTORELEASEPOOL=1)
+add_subdirectory(3rdparty/FlyCube)
 
 list(APPEND headers
    Application/AAPLAppDelegate.h
@@ -7,7 +11,6 @@ list(APPEND headers
    Application/AAPLView.h
    Application/AAPLViewController.h
    Renderer/AAPLRenderer.h
-   Renderer/AAPLShaderTypes.h
 )
 
 list(APPEND sources
@@ -18,10 +21,10 @@ list(APPEND sources
    Renderer/AAPLRenderer.mm
 )
 
-list(APPEND shaders
-   Renderer/AAPLShaders.metal
+list(APPEND resources
+   Renderer/PixelShader.spv
+   Renderer/VertexShader.spv
 )
-set_source_files_properties(${shaders} PROPERTIES LANGUAGE METAL)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "tvOS")
    list(APPEND sources
@@ -51,44 +54,44 @@ set_source_files_properties(${resources} PROPERTIES
    MACOSX_PACKAGE_LOCATION Resources
 )
 
-add_executable(CustomMetalViewCMake MACOSX_BUNDLE
+add_executable(FlyCubeExampleApple MACOSX_BUNDLE
    ${headers}
    ${sources}
-   ${shaders}
    ${resources}
 )
 
-target_include_directories(CustomMetalViewCMake PUBLIC
+target_include_directories(FlyCubeExampleApple PUBLIC
    Renderer
    Application
 )
 
-target_compile_options(CustomMetalViewCMake PUBLIC "-fobjc-arc")
+target_compile_options(FlyCubeExampleApple PUBLIC "-fobjc-arc")
 
-target_link_libraries(CustomMetalViewCMake
+target_link_libraries(FlyCubeExampleApple
+   Instance
    "-framework Metal"
    "-framework QuartzCore"
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
-   target_compile_definitions(CustomMetalViewCMake PUBLIC -DTARGET_IOS=1)
-   target_link_libraries(CustomMetalViewCMake "-framework UIKit")
-   target_include_directories(CustomMetalViewCMake PUBLIC Application/UIKit)
-   set_target_properties(CustomMetalViewCMake PROPERTIES
+   target_compile_definitions(FlyCubeExampleApple PUBLIC -DTARGET_IOS=1)
+   target_link_libraries(FlyCubeExampleApple "-framework UIKit")
+   target_include_directories(FlyCubeExampleApple PUBLIC Application/UIKit)
+   set_target_properties(FlyCubeExampleApple PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Application/UIKit/iOS/Info.plist"
    )
 elseif (CMAKE_SYSTEM_NAME STREQUAL "tvOS")
-   target_compile_definitions(CustomMetalViewCMake PUBLIC -DTARGET_TVOS=1)
-   target_link_libraries(CustomMetalViewCMake "-framework UIKit")
-   target_include_directories(CustomMetalViewCMake PUBLIC Application/UIKit)
-   set_target_properties(CustomMetalViewCMake PROPERTIES
+   target_compile_definitions(FlyCubeExampleApple PUBLIC -DTARGET_TVOS=1)
+   target_link_libraries(FlyCubeExampleApple "-framework UIKit")
+   target_include_directories(FlyCubeExampleApple PUBLIC Application/UIKit)
+   set_target_properties(FlyCubeExampleApple PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Application/UIKit/tvOS/Info.plist"
    )
 else()
-   target_compile_definitions(CustomMetalViewCMake PUBLIC -DTARGET_MACOS=1)
-   target_link_libraries(CustomMetalViewCMake "-framework AppKit")
-   target_include_directories(CustomMetalViewCMake PUBLIC Application/AppKit)
-   set_target_properties(CustomMetalViewCMake PROPERTIES
+   target_compile_definitions(FlyCubeExampleApple PUBLIC -DTARGET_MACOS=1)
+   target_link_libraries(FlyCubeExampleApple "-framework AppKit")
+   target_include_directories(FlyCubeExampleApple PUBLIC Application/AppKit)
+   set_target_properties(FlyCubeExampleApple PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Application/AppKit/macOS/Info.plist"
    )
 endif()

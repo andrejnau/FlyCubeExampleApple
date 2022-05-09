@@ -1,0 +1,3 @@
+[submodule "3rdparty/FlyCube"]
+	path = 3rdparty/FlyCube
+	url = https://github.com/andrejnau/FlyCube.git

@@ -24,21 +24,12 @@ Implementation of the cross-platform view controller
 {
     [super viewDidLoad];
 
-    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
-
     AAPLView *view = (AAPLView *)self.view;
-
-    // Set the device for the layer so the layer can create drawable textures that can be rendered to
-    // on this device.
-    view.metalLayer.device = device;
 
     // Set this class as the delegate to receive resize and render callbacks.
     view.delegate = self;
 
-    view.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
-
-    _renderer = [[AAPLRenderer alloc] initWithMetalDevice:device
-                                      drawablePixelFormat:view.metalLayer.pixelFormat];
+    _renderer = [[AAPLRenderer alloc] initWithMetalLayer:view.metalLayer];
 }
 
 - (void)drawableResize:(CGSize)size

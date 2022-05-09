@@ -10,8 +10,7 @@ Metal Renderer for Metal View. Acts as the update and render delegate for the vi
 
 @interface AAPLRenderer : NSObject
 
-- (nonnull instancetype)initWithMetalDevice:(nonnull id<MTLDevice>)device
-                        drawablePixelFormat:(MTLPixelFormat)drawabklePixelFormat;
+- (nonnull instancetype)initWithMetalLayer:(nonnull CAMetalLayer*)metalLayer;
 
 - (void)renderToMetalLayer:(nonnull CAMetalLayer*)metalLayer;
 
